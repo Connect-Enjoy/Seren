@@ -96,13 +96,14 @@
                 </div>
                 
                 <div style="text-align: center; margin-top: 30px;">
-                    <form method="POST" action="{{ url_for('guest_pay') }}" style="display: inline-block;">
-                        <button type="submit" class="btn" onclick="return confirm('Are you sure you want to proceed with payment and check out?')">
-                            Pay & Check Out
-                        </button>
-                    </form>
+                    <button type="button" id="payButton" class="btn">
+                        Pay & Check Out
+                    </button>
                     <a href="{{ url_for('guest_dashboard') }}" class="btn btn-secondary" style="margin-left: 10px;">Back to Dashboard</a>
                 </div>
+                
+                <!-- Hidden form that will be submitted when payment is confirmed -->
+                <form method="POST" action="{{ url_for('guest_pay') }}" id="paymentForm" style="display: none;"></form>
                 
                 {% else %}
                 <div style="text-align: center; padding: 40px;">
@@ -114,10 +115,76 @@
         </section>
     </main>
 
+    <!-- Payment Confirmation Modal -->
+    <div id="paymentModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3 style="color: var(--primary-green); margin-bottom: 20px;">Confirm Payment & Check Out</h3>
+            <p>Are you sure you want to proceed with payment and check out?</p>
+            <p style="margin: 15px 0; font-weight: bold; color: var(--text-dark);">
+                Total Amount: ₹{{ "%.2f"|format(billing_data.grand_total) if billing_data else '0.00' }}
+            </p>
+            <div class="modal-actions">
+                <button type="button" id="confirmPayment" class="btn" style="margin-right: 10px;">
+                    Yes, Pay & Check Out
+                </button>
+                <button type="button" id="cancelPayment" class="btn btn-secondary">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
     <footer>
         <div class="container">
             © 2025 Seren Hotel Management System. All rights reserved.
         </div>
     </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const payButton = document.getElementById('payButton');
+            const paymentModal = document.getElementById('paymentModal');
+            const confirmPayment = document.getElementById('confirmPayment');
+            const cancelPayment = document.getElementById('cancelPayment');
+            const paymentForm = document.getElementById('paymentForm');
+
+            // Show modal when pay button is clicked
+            if (payButton) {
+                payButton.addEventListener('click', function() {
+                    paymentModal.style.display = 'flex';
+                });
+            }
+
+            // Hide modal when cancel is clicked
+            if (cancelPayment) {
+                cancelPayment.addEventListener('click', function() {
+                    paymentModal.style.display = 'none';
+                });
+            }
+
+            // Submit form when payment is confirmed
+            if (confirmPayment) {
+                confirmPayment.addEventListener('click', function() {
+                    paymentForm.submit();
+                });
+            }
+
+            // Close modal when clicking outside the modal content
+            if (paymentModal) {
+                paymentModal.addEventListener('click', function(e) {
+                    if (e.target === paymentModal) {
+                        paymentModal.style.display = 'none';
+                    }
+                });
+            }
+
+            // Close modal with Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && paymentModal.style.display === 'flex') {
+                    paymentModal.style.display = 'none';
+                }
+            });
+        });
+    </script>
 </body>
 </html>
