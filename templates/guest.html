@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guest Dashboard - Seren Hotel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header>
+        <div class="container header-container">
+            <div class="logo-container">
+                <div class="logo-img">S</div>
+                <div class="logo-text">Seren</div>
+            </div>
+            
+            <div class="nav-center">
+                <a href="{{ url_for('guest_dashboard') }}">Dashboard</a>
+                <a href="{{ url_for('guest_amenities') }}">Room Amenities</a>
+                <a href="{{ url_for('guest_billing') }}">Billing</a>
+                <a href="{{ url_for('guest_logout') }}">Logout</a>
+            </div>
+            
+            <div class="availability-badge">
+                Welcome, {{ session.guest_name }}
+            </div>
+        </div>
+    </header>
+
+    <main>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <section class="hero" style="padding: 60px 0;">
+            <div class="container">
+                <h1>Guest Dashboard</h1>
+                <p>Welcome back, {{ session.guest_name }}! Manage your stay with us.</p>
+                
+                {% if guest_info %}
+                <div class="billing-summary" style="margin-top: 40px;">
+                    <h3 style="color: var(--primary-green); margin-bottom: 20px;">Your Stay Details</h3>
+                    <div class="billing-item">
+                        <span>Guest ID:</span>
+                        <span><strong>{{ guest_info[0] }}</strong></span>
+                    </div>
+                    <div class="billing-item">
+                        <span>Room Number:</span>
+                        <span><strong>{{ guest_info[2] }}</strong> ({{ guest_info[3] }})</span>
+                    </div>
+                    <div class="billing-item">
+                        <span>Check-in:</span>
+                        <span><strong>{{ guest_info[4].strftime('%Y-%m-%d') if guest_info[4] else 'N/A' }}</strong></span>
+                    </div>
+                    <div class="billing-item">
+                        <span>Check-out:</span>
+                        <span><strong>{{ guest_info[5].strftime('%Y-%m-%d') if guest_info[5] else 'N/A' }}</strong></span>
+                    </div>
+                    <div class="billing-item">
+                        <span>Room Charges:</span>
+                        <span><strong>₹{{ "%.2f"|format(guest_info[6]) if guest_info[6] else '0.00' }}</strong></span>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div class="dashboard-cards">
+                    <a href="{{ url_for('guest_amenities') }}" class="dashboard-card">
+                        <h3>Room Amenities</h3>
+                        <p>Order food, beverages, and services directly to your room</p>
+                    </a>
+                    
+                    <a href="{{ url_for('guest_billing') }}" class="dashboard-card">
+                        <h3>Billing & Payment</h3>
+                        <p>View your bill and make payment when checking out</p>
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            © 2025 Seren Hotel Management System. All rights reserved.
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guest Records - Seren Hotel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header>
+        <div class="container header-container">
+            <div class="logo-container">
+                <div class="logo-img">S</div>
+                <div class="logo-text">Seren</div>
+            </div>
+            
+            <div class="nav-center">
+                <a href="{{ url_for('admin_dashboard') }}">Dashboard</a>
+                <a href="{{ url_for('admin_rooms') }}">Room Management</a>
+                <a href="{{ url_for('admin_records') }}">Guest Records</a>
+                <a href="{{ url_for('admin_logout') }}">Logout</a>
+            </div>
+            
+            <div class="availability-badge">
+                Admin Panel
+            </div>
+        </div>
+    </header>
+
+    <main>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <section class="hero" style="padding: 60px 0;">
+            <div class="container">
+                <h1>Guest Records</h1>
+                <p>Complete history of all guest bookings and stays</p>
+                
+                <div class="data-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Guest ID</th>
+                                <th>Name</th>
+                                <th>Room</th>
+                                <th>Check-in</th>
+                                <th>Check-out</th>
+                                <th>Room Charges</th>
+                                <th>Amenities</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th>Booked On</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for guest in guests %}
+                            <tr>
+                                <td>{{ guest[0] }}</td>
+                                <td>{{ guest[1] }}</td>
+                                <td>{{ guest[2] }} ({{ guest[3] }})</td>
+                                <td>{{ guest[4].strftime('%Y-%m-%d') if guest[4] else 'N/A' }}</td>
+                                <td>{{ guest[5].strftime('%Y-%m-%d') if guest[5] else 'N/A' }}</td>
+                                <td>₹{{ "%.2f"|format(guest[6]) }}</td>
+                                <td>₹{{ "%.2f"|format(guest[7]) if guest[7] else '0.00' }}</td>
+                                <td><strong>₹{{ "%.2f"|format(guest[6] + guest[7]) }}</strong></td>
+                                <td>
+                                    <span class="status-badge status-{{ guest[8] }}">
+                                        {{ guest[8]|replace('_', ' ')|title }}
+                                    </span>
+                                </td>
+                                <td>{{ guest[9].strftime('%Y-%m-%d') if guest[9] else 'N/A' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div style="text-align: center; margin-top: 30px;">
+                    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            © 2025 Seren Hotel Management System. All rights reserved.
+        </div>
+    </footer>
+</body>
+</html>

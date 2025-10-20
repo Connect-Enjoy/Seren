@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Room - Seren Hotel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header>
+        <div class="container header-container">
+            <div class="logo-container">
+                <div class="logo-img">S</div>
+                <div class="logo-text">Seren</div>
+            </div>
+            
+            <div class="nav-center">
+                <a href="{{ url_for('index') }}">Home</a>
+                <a href="{{ url_for('book') }}">Book Room</a>
+                <a href="{{ url_for('guest_login') }}">Guest Login</a>
+                <a href="{{ url_for('admin_login') }}">Admin Login</a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <section class="hero" style="padding: 80px 0;">
+            <div class="container">
+                <h1>Book Your Stay</h1>
+                <p>Choose from our available rooms and book your perfect stay</p>
+                
+                <div class="form-container">
+                    <form method="POST" action="{{ url_for('book') }}">
+                        <div class="form-group">
+                            <label for="guest_name">Full Name *</label>
+                            <input type="text" id="guest_name" name="guest_name" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="room_number">Select Room *</label>
+                            <select id="room_number" name="room_number" required>
+                                <option value="">Choose a room</option>
+                                {% for room in available_rooms %}
+                                <option value="{{ room[0] }}">
+                                    Room {{ room[0] }} - {{ room[1] }} (₹{{ "%.2f"|format(room[2]) }}/night)
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="check_in">Check-in Date *</label>
+                            <input type="date" id="check_in" name="check_in" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="check_out">Check-out Date *</label>
+                            <input type="date" id="check_out" name="check_out" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" id="email" name="email">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="phone">Phone Number</label>
+                            <input type="tel" id="phone" name="phone">
+                        </div>
+                        
+                        <button type="submit" class="btn" style="width: 100%;">Complete Booking</button>
+                    </form>
+                    
+                    {% if not available_rooms %}
+                    <div style="text-align: center; margin-top: 30px; padding: 20px; background: #ffe6e6; border-radius: 8px;">
+                        <h3 style="color: #e74c3c;">No rooms available at the moment</h3>
+                        <p>Please check back later or contact us for availability.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            © 2025 Seren Hotel Management System. All rights reserved.
+        </div>
+    </footer>
+
+    <script>
+        // Set minimum date to today
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('check_in').min = today;
+        document.getElementById('check_out').min = today;
+        
+        // Update check-out min date when check-in changes
+        document.getElementById('check_in').addEventListener('change', function() {
+            document.getElementById('check_out').min = this.value;
+        });
+    </script>
+</body>
+</html>

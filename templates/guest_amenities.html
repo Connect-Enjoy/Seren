@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room Amenities - Seren Hotel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header>
+        <div class="container header-container">
+            <div class="logo-container">
+                <div class="logo-img">S</div>
+                <div class="logo-text">Seren</div>
+            </div>
+            
+            <div class="nav-center">
+                <a href="{{ url_for('guest_dashboard') }}">Dashboard</a>
+                <a href="{{ url_for('guest_amenities') }}">Room Amenities</a>
+                <a href="{{ url_for('guest_billing') }}">Billing</a>
+                <a href="{{ url_for('guest_logout') }}">Logout</a>
+            </div>
+            
+            <div class="availability-badge">
+                Welcome, {{ session.guest_name }}
+            </div>
+        </div>
+    </header>
+
+    <main>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <section class="hero" style="padding: 60px 0;">
+            <div class="container">
+                <h1>Room Amenities Menu</h1>
+                <p>Order food, beverages, and services directly to your room</p>
+                
+                {% for category, items in menu_items.items() %}
+                <div class="menu-category">
+                    <h2 style="color: var(--primary-green); margin-bottom: 20px; text-transform: capitalize;">{{ category }}</h2>
+                    <div class="menu-items">
+                        {% for item in items %}
+                        <div class="menu-item">
+                            <h4>{{ item.name }}</h4>
+                            <div class="menu-item-price">₹{{ item.price }}</div>
+                            <form method="POST" action="{{ url_for('guest_amenities') }}" class="order-form">
+                                <input type="hidden" name="item_name" value="{{ item.name }}">
+                                <input type="number" name="quantity" value="1" min="1" max="10" class="quantity-input" required>
+                                <button type="submit" class="btn btn-sm">Add to Order</button>
+                            </form>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+                
+                <div style="text-align: center; margin-top: 40px;">
+                    <a href="{{ url_for('guest_billing') }}" class="btn">View Current Bill</a>
+                    <a href="{{ url_for('guest_dashboard') }}" class="btn btn-secondary" style="margin-left: 10px;">Back to Dashboard</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            © 2025 Seren Hotel Management System. All rights reserved.
+        </div>
+    </footer>
+</body>
+</html>

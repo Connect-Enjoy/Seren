@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seren Hotel Management System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header>
+        <div class="container header-container">
+            <div class="logo-container">
+                <div class="logo-img">S</div>
+                <div class="logo-text">Seren</div>
+            </div>
+            
+            <div class="nav-center">
+                <a href="{{ url_for('index') }}">Home</a>
+                <a href="{{ url_for('book') }}">Book Room</a>
+                <a href="{{ url_for('guest_login') }}">Guest Login</a>
+                <a href="{{ url_for('admin_login') }}">Admin Login</a>
+            </div>
+            
+            <div class="availability-badge" id="availability">
+                Rooms Available: <span id="rooms">{{ available_rooms }}</span>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <section class="hero">
+            <div class="container">
+                <h1>Seren Hotel Management System</h1>
+                <p>Effortless hospitality begins with elegance and technology in harmony.</p>
+                <a href="{{ url_for('book') }}" class="cta-button">Book Now</a>
+            </div>
+        </section>
+
+        <section class="about-section">
+            <div class="container">
+                <h3>About Seren</h3>
+                <p>A modern hotel management system offering complete guest management, room booking, real-time analytics, and automated billing in an elegant, peaceful interface.</p>
+                <div class="highlights">
+                    <span>✓ Cloud-Based</span>
+                    <span>✓ Real-Time Data</span>
+                    <span>✓ Mobile Friendly</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="rooms-section">
+            <div class="container">
+                <h2>Room Types</h2>
+                <div class="room-cards">
+                    <div class="room-card">
+                        <h3>Standard Room</h3>
+                        <p>Simple comfort and value for everyday travelers with all essential amenities.</p>
+                        <div class="room-price">₹2,500/night</div>
+                    </div>
+                    <div class="room-card">
+                        <h3>Deluxe Room</h3>
+                        <p>Elegant décor and enhanced amenities for a relaxing stay with premium comfort.</p>
+                        <div class="room-price">₹4,500/night</div> 
+                    </div>
+                    <div class="room-card">
+                        <h3>Executive Suite</h3>
+                        <p>Spacious rooms with premium furnishings, jacuzzi and scenic views.</p>
+                        <div class="room-price">₹7,500/night</div> 
+                    </div>
+                    <div class="room-card">
+                        <h3>Presidential Suite</h3>
+                        <p>Exclusive luxury with personalized experiences and ultimate comfort.</p>
+                        <div class="room-price">₹12,000/night</div> 
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            © 2025 Seren Hotel Management System. All rights reserved.
+        </div>
+    </footer>
+
+    <script>
+        // Update availability badge if no rooms
+        const roomsAvailable = { available_rooms };
+        const availabilityElement = document.getElementById('availability');
+        
+        if (roomsAvailable === 0) {
+            availabilityElement.innerHTML = "<span style='font-weight:bold;'>Fully Booked</span>";
+            availabilityElement.style.background = "linear-gradient(135deg, #d62828, #a4161a)";
+        }
+    </script>
+</body>
+</html>

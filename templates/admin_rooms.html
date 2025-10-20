@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room Management - Seren Hotel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header>
+        <div class="container header-container">
+            <div class="logo-container">
+                <div class="logo-img">S</div>
+                <div class="logo-text">Seren</div>
+            </div>
+            
+            <div class="nav-center">
+                <a href="{{ url_for('admin_dashboard') }}">Dashboard</a>
+                <a href="{{ url_for('admin_rooms') }}">Room Management</a>
+                <a href="{{ url_for('admin_records') }}">Guest Records</a>
+                <a href="{{ url_for('admin_logout') }}">Logout</a>
+            </div>
+            
+            <div class="availability-badge">
+                Admin Panel
+            </div>
+        </div>
+    </header>
+
+    <main>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <section class="hero" style="padding: 60px 0;">
+            <div class="container">
+                <h1>Room Management</h1>
+                <p>Monitor and manage room availability and status</p>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">{{ stats.total_rooms }}</div>
+                        <div class="stat-label">Total Rooms</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">{{ stats.available_rooms }}</div>
+                        <div class="stat-label">Available Rooms</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">{{ stats.occupied_rooms }}</div>
+                        <div class="stat-label">Occupied Rooms</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">{{ stats.maintenance_rooms }}</div>
+                        <div class="stat-label">Maintenance</div>
+                    </div>
+                </div>
+                
+                <div class="data-table">
+                    <h3 style="margin-bottom: 20px;">All Rooms</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Room Number</th>
+                                <th>Type</th>
+                                <th>Price/Night</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for room in rooms %}
+                            <tr>
+                                <td>{{ room[0] }}</td>
+                                <td>{{ room[1] }}</td>
+                                <td>₹{{ "%.2f"|format(room[3]) }}</td>
+                                <td>
+                                    <span class="status-badge status-{{ room[2] }}">
+                                        {{ room[2]|title }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <form method="POST" action="{{ url_for('update_room_status') }}" style="display: inline;">
+                                        <input type="hidden" name="room_number" value="{{ room[0] }}">
+                                        <select name="status" onchange="this.form.submit()" style="padding: 5px; border-radius: 4px;">
+                                            <option value="available" {% if room[2] == 'available' %}selected{% endif %}>Available</option>
+                                            <option value="occupied" {% if room[2] == 'occupied' %}selected{% endif %}>Occupied</option>
+                                            <option value="maintenance" {% if room[2] == 'maintenance' %}selected{% endif %}>Maintenance</option>
+                                        </select>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div style="text-align: center; margin-top: 30px;">
+                    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            © 2025 Seren Hotel Management System. All rights reserved.
+        </div>
+    </footer>
+</body>
+</html>

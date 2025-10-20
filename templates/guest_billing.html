@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Billing - Seren Hotel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header>
+        <div class="container header-container">
+            <div class="logo-container">
+                <div class="logo-img">S</div>
+                <div class="logo-text">Seren</div>
+            </div>
+            
+            <div class="nav-center">
+                <a href="{{ url_for('guest_dashboard') }}">Dashboard</a>
+                <a href="{{ url_for('guest_amenities') }}">Room Amenities</a>
+                <a href="{{ url_for('guest_billing') }}">Billing</a>
+                <a href="{{ url_for('guest_logout') }}">Logout</a>
+            </div>
+            
+            <div class="availability-badge">
+                Welcome, {{ session.guest_name }}
+            </div>
+        </div>
+    </header>
+
+    <main>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <section class="hero" style="padding: 60px 0;">
+            <div class="container">
+                <h1>Your Bill</h1>
+                <p>Review your charges and make payment</p>
+                
+                {% if guest_info %}
+                <div class="billing-summary">
+                    <h3 style="color: var(--primary-green); margin-bottom: 20px;">Bill Summary</h3>
+                    
+                    <div class="billing-item">
+                        <span>Guest:</span>
+                        <span><strong>{{ guest_info[1] }}</strong> ({{ guest_info[0] }})</span>
+                    </div>
+                    <div class="billing-item">
+                        <span>Room:</span>
+                        <span><strong>{{ guest_info[2] }}</strong> ({{ guest_info[3] }})</span>
+                    </div>
+                    <div class="billing-item">
+                        <span>Stay Period:</span>
+                        <span><strong>{{ guest_info[4].strftime('%Y-%m-%d') if guest_info[4] else 'N/A' }} to {{ guest_info[5].strftime('%Y-%m-%d') if guest_info[5] else 'N/A' }}</strong></span>
+                    </div>
+                    
+                    <div class="billing-item" style="border-top: 2px solid var(--light-green); padding-top: 20px;">
+                        <span>Room Charges:</span>
+                        <span><strong>₹{{ "%.2f"|format(guest_info[6]) if guest_info[6] else '0.00' }}</strong></span>
+                    </div>
+                    
+                    {% if orders %}
+                    <div style="margin: 20px 0;">
+                        <h4 style="color: var(--primary-green); margin-bottom: 15px;">Amenities Orders:</h4>
+                        {% for order in orders %}
+                        <div class="billing-item" style="padding-left: 20px;">
+                            <span>{{ order[0] }} (₹{{ "%.2f"|format(order[1]) }} x {{ order[2] }})</span>
+                            <span>₹{{ "%.2f"|format(order[3]) }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="billing-item">
+                        <span>Amenities Total:</span>
+                        <span><strong>₹{{ "%.2f"|format(guest_info[7]) if guest_info[7] else '0.00' }}</strong></span>
+                    </div>
+                    
+                    <!-- FIXED GST CALCULATION -->
+                    {% set room_charges = guest_info[6] if guest_info[6] else 0 %}
+                    {% set amenities_total = guest_info[7] if guest_info[7] else 0 %}
+                    {% set subtotal = room_charges + amenities_total %}
+                    {% set gst = (subtotal * 0.18) | float %}
+                    
+                    <div class="billing-item">
+                        <span>GST (18%):</span>
+                        <span><strong>₹{{ "%.2f"|format(gst) }}</strong></span>
+                    </div>
+                    
+                    {% set grand_total = subtotal + gst %}
+                    <div class="billing-total">
+                        <span>Grand Total:</span>
+                        <span>₹{{ "%.2f"|format(grand_total) }}</span>
+                    </div>
+                </div>
+                
+                <div style="text-align: center; margin-top: 30px;">
+                    <form method="POST" action="{{ url_for('guest_pay') }}" style="display: inline-block;">
+                        <button type="submit" class="btn" onclick="return confirm('Are you sure you want to proceed with payment and check out?')">
+                            Pay & Check Out
+                        </button>
+                    </form>
+                    <a href="{{ url_for('guest_dashboard') }}" class="btn btn-secondary" style="margin-left: 10px;">Back to Dashboard</a>
+                </div>
+                
+                {% else %}
+                <div style="text-align: center; padding: 40px;">
+                    <h3 style="color: var(--text-light);">No billing information available</h3>
+                    <a href="{{ url_for('guest_dashboard') }}" class="btn">Back to Dashboard</a>
+                </div>
+                {% endif %}
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            © 2025 Seren Hotel Management System. All rights reserved.
+        </div>
+    </footer>
+</body>
+</html>

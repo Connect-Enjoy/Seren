@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guest Login - Seren Hotel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header>
+        <div class="container header-container">
+            <div class="logo-container">
+                <div class="logo-img">S</div>
+                <div class="logo-text">Seren</div>
+            </div>
+            
+            <div class="nav-center">
+                <a href="{{ url_for('index') }}">Home</a>
+                <a href="{{ url_for('book') }}">Book Room</a>
+                <a href="{{ url_for('guest_login') }}">Guest Login</a>
+                <a href="{{ url_for('admin_login') }}">Admin Login</a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <section class="hero" style="padding: 100px 0;">
+            <div class="container">
+                <div class="form-container">
+                    <h2 style="text-align: center; margin-bottom: 30px; color: var(--primary-green);">Guest Login</h2>
+                    
+                    <form method="POST" action="{{ url_for('guest_login') }}">
+                        <div class="form-group">
+                            <label for="guest_id">Guest ID *</label>
+                            <input type="text" id="guest_id" name="guest_id" required placeholder="Enter your Guest ID">
+                            <small style="color: var(--text-light); margin-top: 5px; display: block;">
+                                Your Guest ID was provided during booking
+                            </small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="guest_name">Full Name *</label>
+                            <input type="text" id="guest_name" name="guest_name" required placeholder="Enter your full name as in booking">
+                        </div>
+                        
+                        <button type="submit" class="btn" style="width: 100%;">Login to Dashboard</button>
+                    </form>
+                    
+                    <div style="text-align: center; margin-top: 20px;">
+                        <p style="color: var(--text-light);">
+                            Don't have a booking? <a href="{{ url_for('book') }}" style="color: var(--accent-green);">Book a room now</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            © 2025 Seren Hotel Management System. All rights reserved.
+        </div>
+    </footer>
+</body>
+</html>
