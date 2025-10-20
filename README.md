@@ -2,6 +2,7 @@
 
 # Hotel Seren – Hospitality Management System 🏨✨
 Hotel Seren is a comprehensive web-based platform that simulates real-world hotel operations coordination between guests and administrators to ensure seamless hospitality experiences and efficient room management.
+
 ---
 
 ## 🚀 Project Overview  
@@ -48,12 +49,15 @@ Hotel Seren streamlines the complete hotel management lifecycle by:
 
 ## 📸 Screenshots
 1. Home Page
-<img width="1919" height="867" alt="Home Page" src="https://github.com/user-attachments/assets/c45a5412-6c73-44a3-8bda-c38d2650eed2" />
+
+<img width="1919" height="870" alt="Home Page" src="https://github.com/user-attachments/assets/e5aae193-d8e0-4099-bd39-1acefb1537a5" />
 
 2. Room Booking Page
-<img width="1919" height="868" alt="Room Booking" src="https://github.com/user-attachments/assets/24521a4c-31ff-4d96-8cbc-ea0e8c904e34" />
 
-3. Admin Dashboard Page
-<img width="1919" height="866" alt="Admin Dashboard" src="https://github.com/user-attachments/assets/c7497daa-0424-4f85-910c-32f9f54b9136" />
+<img width="1919" height="873" alt="Room Booking Page" src="https://github.com/user-attachments/assets/cac7fce1-c12c-4241-a2be-3718782fa8bf" />
+
+3. Guest Records Page
+
+<img width="1919" height="869" alt="Guest Records Page" src="https://github.com/user-attachments/assets/54e74b2d-4f5a-46ac-953a-e2b2cc3905be" />
 
 ---
