@@ -83,21 +83,15 @@
                         <span><strong>₹{{ "%.2f"|format(guest_info[7]) if guest_info[7] else '0.00' }}</strong></span>
                     </div>
                     
-                    <!-- FIXED GST CALCULATION -->
-                    {% set room_charges = guest_info[6] if guest_info[6] else 0 %}
-                    {% set amenities_total = guest_info[7] if guest_info[7] else 0 %}
-                    {% set subtotal = room_charges + amenities_total %}
-                    {% set gst = (subtotal * 0.18) | float %}
-                    
+                    <!-- Using pre-calculated values from Python -->
                     <div class="billing-item">
                         <span>GST (18%):</span>
-                        <span><strong>₹{{ "%.2f"|format(gst) }}</strong></span>
+                        <span><strong>₹{{ "%.2f"|format(billing_data.gst) }}</strong></span>
                     </div>
                     
-                    {% set grand_total = subtotal + gst %}
                     <div class="billing-total">
                         <span>Grand Total:</span>
-                        <span>₹{{ "%.2f"|format(grand_total) }}</span>
+                        <span>₹{{ "%.2f"|format(billing_data.grand_total) }}</span>
                     </div>
                 </div>
                 
