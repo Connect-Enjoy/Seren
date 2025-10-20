@@ -4,40 +4,64 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from datetime import datetime
 import random
 import string
+import logging
+
+# Set up logging
+logging.basicConfig(level=logging.DEBUG)
 
 app = Flask(__name__)
-app.secret_key = 'npg_SwYlmpi0uBc4'
+app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
 
-# Neon Database Connection
-CONNECTION_STRING = 'postgresql://neondb_owner:npg_SwYlmpi0uBc4@ep-empty-mode-adhsf63n-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require'
+# Neon Database Connection - Use environment variable for production
+CONNECTION_STRING = os.environ.get('DATABASE_URL', 'postgresql://neondb_owner:npg_SwYlmpi0uBc4@ep-empty-mode-adhsf63n-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require')
 
 def get_db_connection():
     try:
-        # Parse connection string
-        conn_str = CONNECTION_STRING
-        if conn_str.startswith('postgresql://'):
-            parts = conn_str.replace('postgresql://', '').split('@')
-            user_pass = parts[0].split(':')
-            host_db = parts[1].split('/')
-            host_port = host_db[0].split(':')
+        # Get connection string from environment with fallback
+        database_url = os.environ.get('DATABASE_URL', CONNECTION_STRING)
+        
+        # Parse the connection string
+        if database_url.startswith('postgresql://'):
+            # Remove the postgresql:// prefix
+            url_parts = database_url[13:]  # Remove 'postgresql://'
             
-            username = user_pass[0]
-            password = user_pass[1]
-            hostname = host_port[0]
-            database = host_db[1].split('?')[0]
-            port = 5432
+            # Split user:password and host:port/database
+            user_pass, host_db = url_parts.split('@', 1)
+            username, password = user_pass.split(':', 1)
+            
+            # Split host:port and database
+            if '/' in host_db:
+                host_port, database = host_db.split('/', 1)
+            else:
+                host_port = host_db
+                database = 'neondb'
+            
+            # Split host and port
+            if ':' in host_port:
+                host, port = host_port.split(':', 1)
+            else:
+                host = host_port
+                port = '5432'
+            
+            # Remove query parameters from database name
+            if '?' in database:
+                database = database.split('?')[0]
+            
+            print(f"🔗 Connecting to: {host}:{port}/{database}")
             
             conn = pg8000.connect(
-                host=hostname,
+                host=host,
                 user=username,
                 password=password,
                 database=database,
-                port=port,
+                port=int(port),
                 ssl_context=True
             )
+            print("✅ Database connection successful!")
             return conn
+            
     except Exception as err:
-        print(f"Database connection failed: {err}")
+        print(f"❌ Database connection failed: {err}")
         return None
 
 def init_db():
@@ -125,7 +149,10 @@ def init_db():
             conn.close()
 
 # Initialize database on startup
-init_db()
+try:
+    init_db()
+except Exception as e:
+    print(f"⚠️ Database initialization warning: {e}")
 
 def generate_guest_id():
     return 'G' + ''.join(random.choices(string.digits, k=8))
@@ -155,22 +182,46 @@ MENU_ITEMS = {
     ]
 }
 
+# Test route to check database connection
+@app.route('/test')
+def test_route():
+    try:
+        conn = get_db_connection()
+        if conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT 1")
+            result = cursor.fetchone()
+            cursor.close()
+            conn.close()
+            return f"✅ Database connection successful! Test query result: {result}"
+        else:
+            return "❌ Database connection failed - no connection object returned"
+    except Exception as e:
+        return f"❌ Database connection error: {str(e)}"
+
 # Routes
 @app.route('/')
 def index():
-    conn = get_db_connection()
-    available_rooms_count = 0
+    try:
+        conn = get_db_connection()
+        available_rooms_count = 0
+        
+        if conn:
+            try:
+                cursor = conn.cursor()
+                cursor.execute("SELECT COUNT(*) FROM rooms WHERE status = 'available'")
+                available_rooms_count = cursor.fetchone()[0]
+                cursor.close()
+            except Exception as err:
+                print(f"Error loading room count: {err}")
+            finally:
+                conn.close()
+        
+        return render_template('index.html', available_rooms=available_rooms_count)
     
-    if conn:
-        try:
-            cursor = conn.cursor()
-            cursor.execute("SELECT COUNT(*) FROM rooms WHERE status = 'available'")
-            available_rooms_count = cursor.fetchone()[0]
-            cursor.close()
-        except Exception as err:
-            print(f"Error loading room count: {err}")
-    
-    return render_template('index.html', available_rooms=available_rooms_count)
+    except Exception as e:
+        print(f"Error in index route: {e}")
+        return render_template('index.html', available_rooms=0)
 
 @app.route('/book', methods=['GET', 'POST'])
 def book():
@@ -238,6 +289,8 @@ def book():
             cursor.close()
         except Exception as err:
             print(f"Error loading rooms: {err}")
+        finally:
+            conn.close()
     
     return render_template('book.html', available_rooms=available_rooms)
 
@@ -306,6 +359,8 @@ def guest_dashboard():
             cursor.close()
         except Exception as err:
             print(f"Error loading guest info: {err}")
+        finally:
+            conn.close()
     
     return render_template('guest.html', guest_info=guest_info)
 
@@ -368,6 +423,7 @@ def guest_billing():
     conn = get_db_connection()
     guest_info = None
     orders = []
+    billing_data = {}
     
     if conn:
         try:
@@ -390,10 +446,31 @@ def guest_billing():
             
             cursor.close()
             
+            # Calculate billing totals in Python to avoid template errors
+            if guest_info:
+                room_charges = float(guest_info[6]) if guest_info[6] else 0.0
+                amenities_total = float(guest_info[7]) if guest_info[7] else 0.0
+                subtotal = room_charges + amenities_total
+                gst = subtotal * 0.18
+                grand_total = subtotal + gst
+                
+                billing_data = {
+                    'room_charges': room_charges,
+                    'amenities_total': amenities_total,
+                    'subtotal': subtotal,
+                    'gst': gst,
+                    'grand_total': grand_total
+                }
+            
         except Exception as err:
             print(f"Error loading billing info: {err}")
+        finally:
+            conn.close()
     
-    return render_template('guest_billing.html', guest_info=guest_info, orders=orders)
+    return render_template('guest_billing.html', 
+                         guest_info=guest_info, 
+                         orders=orders,
+                         billing_data=billing_data)
 
 @app.route('/guest/pay', methods=['POST'])
 def guest_pay():
@@ -412,9 +489,11 @@ def guest_pay():
             
             # Get room number to mark as available
             cursor.execute("SELECT room_number FROM guests WHERE guest_id = %s", (guest_id,))
-            room_number = cursor.fetchone()[0]
+            room_result = cursor.fetchone()
             
-            cursor.execute("UPDATE rooms SET status = 'available' WHERE room_number = %s", (room_number,))
+            if room_result:
+                room_number = room_result[0]
+                cursor.execute("UPDATE rooms SET status = 'available' WHERE room_number = %s", (room_number,))
             
             conn.commit()
             cursor.close()
@@ -480,6 +559,8 @@ def admin_rooms():
             
         except Exception as err:
             print(f"Error loading room data: {err}")
+        finally:
+            conn.close()
     
     return render_template('admin_rooms.html', rooms=rooms, stats=stats)
 
@@ -527,6 +608,8 @@ def admin_records():
             cursor.close()
         except Exception as err:
             print(f"Error loading guest records: {err}")
+        finally:
+            conn.close()
     
     return render_template('admin_records.html', guests=guests)
 
@@ -544,8 +627,20 @@ def guest_logout():
     flash('Guest logged out successfully!', 'success')
     return redirect(url_for('index'))
 
+# Error handlers
+@app.errorhandler(404)
+def not_found_error(error):
+    return render_template('404.html'), 404
+
+@app.errorhandler(500)
+def internal_error(error):
+    return render_template('500.html'), 500
+
 # Vercel requirement
 application = app
 
 if __name__ == '__main__':
+    print("🚀 Starting Flask application...")
     app.run(host='0.0.0.0', port=5000, debug=True)
+else:
+    print("🚀 Application started in production mode")
